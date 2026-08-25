@@ -15,40 +15,40 @@ import java.net.http.HttpResponse;
 public class PromptLabApp {
 
     public static void main(String[] args) throws Exception {
-       Scanner input=new Scanner(System.in);
-       
-       sayWelcomeMessage();
-       showMenu();
-       
-       System.out.println("Enter your choice: ");
-       int choice=input.nextInt();
-       
-       input.nextLine();
-       
-       handleChoice(choice,input);
-       input.close();       
+        Scanner input = new Scanner(System.in);
+
+        sayWelcomeMessage();
+        showMenu();
+
+        System.out.println("Enter your choice: ");
+        int choice = input.nextInt();
+
+        input.nextLine();
+
+        handleChoice(choice, input);
+        input.close();
     }
-    
-    
+
     public static void sayWelcomeMessage() {
         System.out.println("===PROMPT LAB===");
         System.out.println("Prompt engineering Playground");
         System.out.println();
-                
+
     }
-  
+
     public static void showMenu() {
         System.out.println();
         System.out.println("Select a prompt technique:");
         System.out.println("1 - Role / Context / Goal");
-        System.out.println("2 - Constraints / Examples");
+        System.out.println("2 - Constraints");
         System.out.println("3 - Output Format");
     }
-    
+
     public static void handleChoice(int choice, Scanner input) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
         System.out.println();
         switch (choice) {
-            case 1:
+            case 1: {
                 System.out.println("RCG selected.");
 
                 System.out.println("Enter your prompt: ");
@@ -58,25 +58,54 @@ public class PromptLabApp {
                 String engineeredPrompt
                         = PromptGenerator.createRoleContextGoalPrompt(originalPrompt);
 
-                HttpClient client = HttpClient.newHttpClient();
-
 // for original
                 HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
                 printPromptResult("Original", originalPrompt, originalResponse);
 
-// for engineered
+//for engineered
                 HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
                 printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
 
                 break;
+            }
+            case 2: {
+                System.out.println("Constraints selected.");
 
-            case 2:
-                System.out.println("Constraints / Examples selected.");
+                System.out.println("Enter your prompt: ");
+                String originalPrompt = input.nextLine();
+                System.out.println();
+
+                String engineeredPrompt = PromptGenerator.createConstraintsPrompt(originalPrompt);
+
+//for original
+                HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
+                printPromptResult("Original", originalPrompt, originalResponse);
+
+//for engineered
+                HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
+
                 break;
-
-            case 3:
+            }
+            case 3: {
                 System.out.println("Output format selected.");
+
+                System.out.println("Enter your prompt: ");
+                String originalPrompt = input.nextLine();
+                System.out.println();
+
+                String engineeredPrompt = PromptGenerator.createOutputFormatPrompt(originalPrompt);
+
+//for original
+                HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
+                printPromptResult("Original", originalPrompt, originalResponse);
+
+//for engineered
+                HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
+
                 break;
+            }
 
             default:
                 System.out.println("Invalid choice.");
@@ -85,83 +114,83 @@ public class PromptLabApp {
     }
 
     public static String createRequestBody(String prompt) {
-        JSONObject message=new JSONObject();
+        JSONObject message = new JSONObject();
         message.put("role", "user");
         message.put("content", prompt);
-        
-        JSONArray messages=new JSONArray();
+
+        JSONArray messages = new JSONArray();
         messages.put(message);
-        
-        
-        JSONObject requestBody=new JSONObject();
+
+        JSONObject requestBody = new JSONObject();
         requestBody.put("model", "qwen/qwen3.6-27b");
-    requestBody.put("messages", messages);
-    requestBody.put("reasoning_effort", "none");
+        requestBody.put("messages", messages);
+        requestBody.put("reasoning_effort", "none");
 
-    return requestBody.toString();
+        return requestBody.toString();
     }
-    
-   public static HttpRequest createHttpRequest(String jsonBody) { String apiKey = System.getenv("GROQ_API_KEY");
 
-    HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("https://api.groq.com/openai/v1/chat/completions"))
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer " + apiKey)
-            .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-            .build();
+    public static HttpRequest createHttpRequest(String jsonBody) {
+        String apiKey = System.getenv("GROQ_API_KEY");
 
-    return request;
-      
-   } 
-   
-   public static String parseResponse(String responseBody) {
-       JSONObject jsonResponse = new JSONObject(responseBody);
-       
-       JSONArray choices = jsonResponse.getJSONArray("choices");
-       
-       JSONObject firstChoice=choices.getJSONObject(0);
-       JSONObject message=firstChoice.getJSONObject("message");
-       String content = message.getString("content");
-       return content;
-       
-   }
-   
-   public static HttpResponse<String> sendPrompt(String prompt, HttpClient client) throws Exception {
-     
-                String jsonBody = createRequestBody(prompt);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.groq.com/openai/v1/chat/completions"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + apiKey)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
 
-                HttpRequest request
-                        = createHttpRequest(jsonBody);
+        return request;
 
-                HttpResponse<String> response
-                        = client.send(
-                                request,
-                                HttpResponse.BodyHandlers.ofString()
-                        );
-                
-                return response;
-}
-   
-   public static void printPromptResult(String label, String prompt, HttpResponse<String> response) {
-            
-                String llmResponse=parseResponse(response.body());
-     
-                System.out.println("---" + label + " Prompt---");
-                System.out.println(prompt);
-                System.out.println();
+    }
 
-                System.out.println("---" + label + " Status Code---");
-                System.out.println(response.statusCode());
-                System.out.println();
-                
-                System.out.println("---"+ label + " Raw Response Body---");
-                System.out.println(response.body());
-                System.out.println();
-                
-                System.out.println("---" + label + " LLM Response---");
-                System.out.println(llmResponse);
-                System.out.println();
-                System.out.println();
-   }
-   
+    public static String parseResponse(String responseBody) {
+        JSONObject jsonResponse = new JSONObject(responseBody);
+
+        JSONArray choices = jsonResponse.getJSONArray("choices");
+
+        JSONObject firstChoice = choices.getJSONObject(0);
+        JSONObject message = firstChoice.getJSONObject("message");
+        String content = message.getString("content");
+        return content;
+
+    }
+
+    public static HttpResponse<String> sendPrompt(String prompt, HttpClient client) throws Exception {
+
+        String jsonBody = createRequestBody(prompt);
+
+        HttpRequest request
+                = createHttpRequest(jsonBody);
+
+        HttpResponse<String> response
+                = client.send(
+                        request,
+                        HttpResponse.BodyHandlers.ofString()
+                );
+
+        return response;
+    }
+
+    public static void printPromptResult(String label, String prompt, HttpResponse<String> response) {
+
+        String llmResponse = parseResponse(response.body());
+
+        System.out.println("---" + label + " Prompt---");
+        System.out.println(prompt);
+        System.out.println();
+
+        System.out.println("---" + label + " Status Code---");
+        System.out.println(response.statusCode());
+        System.out.println();
+
+        System.out.println("---" + label + " Raw Response Body---");
+        System.out.println(response.body());
+        System.out.println();
+
+        System.out.println("---" + label + " LLM Response---");
+        System.out.println(llmResponse);
+        System.out.println();
+        System.out.println();
+    }
+
 }

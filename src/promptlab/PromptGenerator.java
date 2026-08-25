@@ -35,6 +35,19 @@ public class PromptGenerator {
                
                """.formatted(originalPrompt);
     }
+    
+    public static String createOutputFormatPrompt(String originalPrompt) {
+        return """
+                 User Task:
+                           %s
+               
+                           Output Format:
+                           1. Short Answer:
+                           2. Key Points:
+                           3. Example:
+                           4. Final Summary:
+               """.formatted(originalPrompt);
+    }
 
 
     
