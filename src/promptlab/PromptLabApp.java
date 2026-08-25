@@ -11,10 +11,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-/**
- *
- * @author feyza
- */
+
 public class PromptLabApp {
 
     public static void main(String[] args) throws Exception {
@@ -60,32 +57,16 @@ public class PromptLabApp {
 
                 String engineeredPrompt
                         = PromptGenerator.createRoleContextGoalPrompt(originalPrompt);
-                
+
                 HttpClient client = HttpClient.newHttpClient();
 
-                String jsonBody=createRequestBody(engineeredPrompt);
-                
-                HttpRequest request = createHttpRequest(jsonBody);
-                
-                  HttpResponse<String> response =
-            client.send(
-                    request,
-                    HttpResponse.BodyHandlers.ofString()
-            );
+// for original
+                HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
+                printPromptResult("Original", originalPrompt, originalResponse);
 
-
-                System.out.println("---Original Prompt---");
-                System.out.println(originalPrompt);
-                System.out.println();
-
-                System.out.println("---Engineered Prompt---");
-                System.out.println(engineeredPrompt);
-                
-                System.out.println("---Status Code---");
-                System.out.println(response.statusCode());
-                
-                System.out.println("---Raw Response Body---");
-                System.out.println(response.body());
+// for engineered
+                HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
 
                 break;
 
@@ -115,6 +96,7 @@ public class PromptLabApp {
         JSONObject requestBody=new JSONObject();
         requestBody.put("model", "qwen/qwen3.6-27b");
     requestBody.put("messages", messages);
+    requestBody.put("reasoning_effort", "none");
 
     return requestBody.toString();
     }
@@ -131,4 +113,55 @@ public class PromptLabApp {
     return request;
       
    } 
+   
+   public static String parseResponse(String responseBody) {
+       JSONObject jsonResponse = new JSONObject(responseBody);
+       
+       JSONArray choices = jsonResponse.getJSONArray("choices");
+       
+       JSONObject firstChoice=choices.getJSONObject(0);
+       JSONObject message=firstChoice.getJSONObject("message");
+       String content = message.getString("content");
+       return content;
+       
+   }
+   
+   public static HttpResponse<String> sendPrompt(String prompt, HttpClient client) throws Exception {
+     
+                String jsonBody = createRequestBody(prompt);
+
+                HttpRequest request
+                        = createHttpRequest(jsonBody);
+
+                HttpResponse<String> response
+                        = client.send(
+                                request,
+                                HttpResponse.BodyHandlers.ofString()
+                        );
+                
+                return response;
+}
+   
+   public static void printPromptResult(String label, String prompt, HttpResponse<String> response) {
+            
+                String llmResponse=parseResponse(response.body());
+     
+                System.out.println("---" + label + " Prompt---");
+                System.out.println(prompt);
+                System.out.println();
+
+                System.out.println("---" + label + " Status Code---");
+                System.out.println(response.statusCode());
+                System.out.println();
+                
+                System.out.println("---"+ label + " Raw Response Body---");
+                System.out.println(response.body());
+                System.out.println();
+                
+                System.out.println("---" + label + " LLM Response---");
+                System.out.println(llmResponse);
+                System.out.println();
+                System.out.println();
+   }
+   
 }
