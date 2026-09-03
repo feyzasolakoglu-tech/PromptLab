@@ -59,12 +59,18 @@ public class PromptLabApp {
                         = PromptGenerator.createRoleContextGoalPrompt(originalPrompt);
 
 // for original
+long originalStartTime = System.nanoTime();
                 HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
-                printPromptResult("Original", originalPrompt, originalResponse);
+long originalEndTime = System.nanoTime();
+double originalLatencySeconds = (originalEndTime - originalStartTime) / 1_000_000_000.0;
+                printPromptResult("Original", originalPrompt, originalResponse, originalLatencySeconds);
 
 //for engineered
+long engineeredStartTime=System.nanoTime();
                 HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
-                printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
+long engineeredEndTime=System.nanoTime();
+double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_000_000.0;
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
 
                 break;
             }
@@ -77,13 +83,19 @@ public class PromptLabApp {
 
                 String engineeredPrompt = PromptGenerator.createConstraintsPrompt(originalPrompt);
 
-//for original
+// for original
+long originalStartTime = System.nanoTime();
                 HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
-                printPromptResult("Original", originalPrompt, originalResponse);
+long originalEndTime = System.nanoTime();
+double originalLatencySeconds = (originalEndTime - originalStartTime) / 1_000_000_000.0;
+                printPromptResult("Original", originalPrompt, originalResponse, originalLatencySeconds);
 
 //for engineered
+long engineeredStartTime=System.nanoTime();
                 HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
-                printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
+long engineeredEndTime=System.nanoTime();
+double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_000_000.0;
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
 
                 break;
             }
@@ -96,13 +108,19 @@ public class PromptLabApp {
 
                 String engineeredPrompt = PromptGenerator.createOutputFormatPrompt(originalPrompt);
 
-//for original
+// for original
+long originalStartTime = System.nanoTime();
                 HttpResponse<String> originalResponse = sendPrompt(originalPrompt, client);
-                printPromptResult("Original", originalPrompt, originalResponse);
+long originalEndTime = System.nanoTime();
+double originalLatencySeconds = (originalEndTime - originalStartTime) / 1_000_000_000.0;
+                printPromptResult("Original", originalPrompt, originalResponse, originalLatencySeconds);
 
 //for engineered
+long engineeredStartTime=System.nanoTime();
                 HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
-                printPromptResult("Engineered", engineeredPrompt, engineeredResponse);
+long engineeredEndTime=System.nanoTime();
+double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_000_000.0;
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
 
                 break;
             }
@@ -150,12 +168,13 @@ public class PromptLabApp {
         HttpRequest request
                 = createHttpRequest(jsonBody);
 
+       
         HttpResponse<String> response
                 = client.send(
                         request,
                         HttpResponse.BodyHandlers.ofString()
                 );
-
+       
         return response;
     }
     
@@ -182,7 +201,8 @@ public class PromptLabApp {
         return tokenUsage;
     }
 
-    public static void printPromptResult(String label, String prompt, HttpResponse<String> response) {
+    public static void printPromptResult(String label, String prompt, HttpResponse<String> response,
+            double latencySeconds) {
 
         String llmResponse = parseResponse(response.body());
         
@@ -192,6 +212,10 @@ public class PromptLabApp {
         System.out.println("Prompt Tokens: " + parsedUsage.getPromptTokens());
         System.out.println("Completion Tokens: " + parsedUsage.getCompletionTokens());
         System.out.println("Total Tokens: " + parsedUsage.getTotalTokens());
+        System.out.println();
+        
+        System.out.println("---" + label + " Latency---");
+        System.out.println(latencySeconds +" seconds");
         System.out.println();
 
         System.out.println("---" + label + " Prompt---");
