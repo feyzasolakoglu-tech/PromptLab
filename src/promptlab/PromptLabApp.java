@@ -95,10 +95,22 @@ long engineeredStartTime=System.nanoTime();
                 HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
 long engineeredEndTime=System.nanoTime();
 double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_000_000.0;
+
+    String engineeredText=parseResponse(engineeredResponse.body());
+    int wordCount=countWords(engineeredText);
                 printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
 
+            System.out.println("Maximum Words: 300");
+            System.out.println("Generated Words: "+wordCount);
+                if(wordCount<=300) {
+                    System.out.println("Word Limit: PASSED");
+                }
+                else {
+                    System.out.println("Word Limit: VIOLATED");
+                }
                 break;
             }
+            
             case 3: {
                 System.out.println("Output format selected.");
 
@@ -120,8 +132,8 @@ long engineeredStartTime=System.nanoTime();
                 HttpResponse<String> engineeredResponse = sendPrompt(engineeredPrompt, client);
 long engineeredEndTime=System.nanoTime();
 double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_000_000.0;
-                printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
 
+                printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
                 break;
             }
 
@@ -199,6 +211,11 @@ double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_
                 
         TokenUsage tokenUsage=new TokenUsage(promptTokens,completionTokens, totalTokens);
         return tokenUsage;
+    }
+    
+    public static int countWords(String text) {
+        String[] words = text.trim().split("\\s+");
+        return words.length;
     }
 
     public static void printPromptResult(String label, String prompt, HttpResponse<String> response,
