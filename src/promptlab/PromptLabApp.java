@@ -143,18 +143,6 @@ public class PromptLabApp {
 
     }
 
-    public static String parseResponse(String responseBody) {
-        JSONObject jsonResponse = new JSONObject(responseBody);
-
-        JSONArray choices = jsonResponse.getJSONArray("choices");
-
-        JSONObject firstChoice = choices.getJSONObject(0);
-        JSONObject message = firstChoice.getJSONObject("message");
-        String content = message.getString("content");
-        return content;
-
-    }
-
     public static HttpResponse<String> sendPrompt(String prompt, HttpClient client) throws Exception {
 
         String jsonBody = createRequestBody(prompt);
@@ -170,10 +158,41 @@ public class PromptLabApp {
 
         return response;
     }
+    
+    public static String parseResponse(String responseBody) {
+        JSONObject jsonResponse = new JSONObject(responseBody);
+
+        JSONArray choices = jsonResponse.getJSONArray("choices");
+
+        JSONObject firstChoice = choices.getJSONObject(0);
+        JSONObject message = firstChoice.getJSONObject("message");
+        String content = message.getString("content");
+        return content;
+
+    }
+    
+    public static TokenUsage parseTokenUsage(String responseBody) {
+        JSONObject jsonResponse = new JSONObject(responseBody);
+        JSONObject usage = jsonResponse.getJSONObject("usage");
+        int promptTokens=usage.getInt("prompt_tokens");
+        int completionTokens=usage.getInt("completion_tokens");
+        int totalTokens=usage.getInt("total_tokens");
+                
+        TokenUsage tokenUsage=new TokenUsage(promptTokens,completionTokens, totalTokens);
+        return tokenUsage;
+    }
 
     public static void printPromptResult(String label, String prompt, HttpResponse<String> response) {
 
         String llmResponse = parseResponse(response.body());
+        
+        TokenUsage parsedUsage=parseTokenUsage(response.body());
+        
+        System.out.println("---" + label + " Token Usage---");
+        System.out.println("Prompt Tokens: " + parsedUsage.getPromptTokens());
+        System.out.println("Completion Tokens: " + parsedUsage.getCompletionTokens());
+        System.out.println("Total Tokens: " + parsedUsage.getTotalTokens());
+        System.out.println();
 
         System.out.println("---" + label + " Prompt---");
         System.out.println(prompt);
