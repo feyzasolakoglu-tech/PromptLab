@@ -134,9 +134,25 @@ long engineeredEndTime=System.nanoTime();
 double engineeredLatencySeconds=(engineeredEndTime-engineeredStartTime) / 1_000_000_000.0;
 
                 printPromptResult("Engineered", engineeredPrompt, engineeredResponse, engineeredLatencySeconds);
+                
+                String engineeredText=parseResponse(engineeredResponse.body());
+            boolean hasShortAnswer=engineeredText.contains("Short Answer:");
+            boolean hasKeyPoints=engineeredText.contains("Key Points:");
+            boolean hasExample=engineeredText.contains("Example:");
+            boolean hasFinalSummary=engineeredText.contains("Final Summary:");
+            
+                System.out.println("---Output Format Validation---");
+                if(hasShortAnswer && hasKeyPoints && hasExample && hasFinalSummary) {
+                    System.out.println("Output Format: PASSED");
+                }
+                else {
+                    System.out.println("Output FOrmat: VIOLATED");
+                }
+                
                 break;
             }
 
+            
             default:
                 System.out.println("Invalid choice.");
 
