@@ -1,15 +1,15 @@
 # PromptLab
 
-PromptLab is a Java-based console application designed to explore and compare different prompt engineering techniques using a Large Language Model (LLM) API.
+PromptLab is a Java-based console application for comparing different prompt engineering techniques using a Large Language Model (LLM) API.
 
-Instead of sending only one prompt to the model, PromptLab sends both:
+For each experiment, the application sends both:
 
 - the user's **original prompt**
 - an **engineered version** of the same prompt
 
-to the same LLM and displays the responses separately.
+to the same model and displays the results separately.
 
-The goal is to make the effects of prompt engineering observable rather than treating prompt design only as a theoretical concept.
+PromptLab also measures token usage and latency, and performs basic programmatic validation for measurable prompt requirements.
 
 ---
 
@@ -17,84 +17,81 @@ The goal is to make the effects of prompt engineering observable rather than tre
 
 This project started as a practical follow-up to my Prompt Engineering studies.
 
-Rather than learning techniques such as Role / Context / Goal, Constraints, and Output Formatting only theoretically, I wanted to apply them programmatically and observe how they influence LLM responses.
-
-While developing PromptLab, I also practiced working with Java, HTTP, REST APIs, JSON, environment variables, and LLM API integration.
+I wanted to move beyond theory and experiment with how techniques such as Role / Context / Goal, Constraints, and Output Formatting influence LLM responses while also practicing Java, HTTP, REST APIs, JSON, and LLM API integration.
 
 ---
 
 ## ⚙️ How It Works
 
-The application follows a simple comparison flow:
-
 ```text
-User enters an original prompt
-            |
-            v
-Select a prompt engineering technique
-            |
-            v
-PromptGenerator creates an engineered prompt
-            |
-            +--------------------------+
-            |                          |
-            v                          v
-   Original Prompt             Engineered Prompt
-            |                          |
-            v                          v
-        LLM API                    LLM API
-            |                          |
-            v                          v
-    Original Response          Engineered Response
-            \                          /
-             \                        /
-              ------ Comparison ------
+Original Prompt
+      |
+      v
+Select Technique
+      |
+      v
+PromptGenerator
+      |
+      +----------------------+
+      |                      |
+      v                      v
+Original Prompt       Engineered Prompt
+      |                      |
+      v                      v
+    LLM API                LLM API
+      |                      |
+      v                      v
+Original Response     Engineered Response
+      \                      /
+       \                    /
+          --- Comparison ---
 ```
 
-Both prompts are sent as separate requests to the same model.
-
-This makes it possible to observe what changed after applying a specific prompt engineering technique.
+Both prompts are sent as separate requests to the same model so their outputs can be compared under the same conditions.
 
 ---
 
 ## 🧠 Prompt Engineering Techniques
 
-PromptLab currently supports three techniques.
+PromptLab currently supports three techniques:
 
 ### 1. Role / Context / Goal — RCG
 
 Adds a defined role, context, and goal to guide how the model approaches the task.
 
-Its main purpose is to improve **audience alignment, context awareness, and response framing**.
+Main purpose:
+
+> **Audience alignment, context awareness, and response framing**
 
 ### 2. Constraints
 
 Adds explicit limitations such as response length, scope, repetition, and number of examples.
 
-Its main purpose is to create **more focused and controlled responses**.
+Main purpose:
+
+> **More focused and controlled responses**
 
 ### 3. Output Format
 
 Defines the structure the model should follow when generating its response.
 
-Its main purpose is to make outputs more **predictable and consistent**.
+Main purpose:
+
+> **More predictable and consistent outputs**
 
 ---
 
-## 🧪 Experiments
+# 🧪 Experiments
 
 To evaluate the techniques, I ran comparisons using the same model for both the original and engineered prompts.
 
-The experiments below were executed using:
-
 - **Model:** `qwen/qwen3.6-27b`
 - **API:** Groq Chat Completions API
-- **Application:** PromptLab
 - **Requests per experiment:** 2
   - one original prompt request
   - one engineered prompt request
 
-> **Note:** LLM responses are not deterministic. These experiments represent individual runs and should be interpreted as observations rather than fixed benchmark results.
+> **Note:** LLM responses are not deterministic. These results represent individual runs and should be interpreted as observations rather than fixed benchmarks.
 
 ---
 
@@ -130,23 +127,17 @@ Explain abstraction.
 | HTTP Status | 200 | 200 |
 | Completion Status | Completed | Completed |
 
-Interestingly, the engineered response was **longer**, not shorter.
+The engineered response was longer than the original.
 
-The original response was already a strong general explanation of abstraction. It included programming concepts, analogies, examples, and explanations of abstract classes and interfaces.
-
-However, the engineered response changed the **way the topic was presented**.
-
-It explicitly recognized the reader as a software engineering student, used a more instructional and step-by-step style, and even added a small practice exercise.
+However, the main difference was not response length. The engineered version used a more instructional and step-by-step style and adapted the explanation to the intended audience.
 
 ### Observation
 
-The RCG technique did not automatically make the answer shorter or universally "better."
-
-Its main observed effect was:
+The main observed effect was:
 
 > **Better alignment with the intended audience and learning context.**
 
-This experiment also demonstrates an important point: prompt engineering is not always about producing more content or fewer tokens.
+This experiment showed that prompt engineering is not always about reducing tokens.
 
 Sometimes its value is in controlling **how the model approaches the user and the task**.
 
@@ -182,17 +173,9 @@ Constraints:
 | HTTP Status | 200 | 200 |
 | Completion Status | Completed | Completed |
 
-The original response expanded into a detailed comparison containing:
+The original response expanded into a detailed comparison with multiple examples and additional technical details.
 
-- performance characteristics
-- multiple code examples
-- memory usage
-- cache behavior
-- common misconceptions
-- decision recommendations
-- additional data structure suggestions
-
-The engineered response stayed focused on the main differences between `ArrayList` and `LinkedList`, explained when each should be used, and included only one compact example.
+The engineered response stayed focused on the main differences, explained when each structure should be used, and used only one compact example.
 
 The completion output decreased from:
 
@@ -214,15 +197,7 @@ The Constraints technique produced the clearest reduction in unnecessary detail.
 
 The core information was still preserved while the response became significantly more focused.
 
-This experiment suggests that constraints can be especially useful when an application needs:
-
-- shorter responses
-- controlled scope
-- less repetition
-- lower token usage
-- more predictable response length
-
-However, natural-language constraints such as `"use no more than 300 words"` are still instructions to the model rather than hard programmatic limits.
+Natural-language constraints such as `"use no more than 300 words"` are still instructions to the model rather than hard generation limits.
 
 ---
 
@@ -255,16 +230,9 @@ Output Format:
 | HTTP Status | 200 | 200 |
 | Completion Status | Completed | Completed |
 
-The original response selected its own structure and included sections such as:
+The original response selected its own structure.
 
-- Overview
-- HTTP Request
-- HTTP Response
-- Step-by-Step Flow
-- HTTP Status Codes
-- Key Concepts
-
-The engineered response instead followed the requested structure directly:
+The engineered response instead followed the requested format directly:
 
 ```text
 1. Short Answer
@@ -275,19 +243,15 @@ The engineered response instead followed the requested structure directly:
 
 ### Observation
 
-The most important result of this experiment was **not the reduction in tokens**.
-
 The main effect was:
 
 > **Structural control and predictability.**
 
-The model followed the predefined format, making the response easier to anticipate and potentially easier for another program to process.
-
-This can be especially useful in applications where LLM responses need to follow a consistent structure.
+The predefined format made the response easier to anticipate and potentially easier for another program to process.
 
 ---
 
-### 📊 Experiment Summary
+## 📊 Experiment Summary
 
 | Technique | Main Observed Effect |
 |---|---|
@@ -295,17 +259,51 @@ This can be especially useful in applications where LLM responses need to follow
 | **Constraints** | Better control over scope and response length |
 | **Output Format** | More predictable response structure |
 
-The experiments also showed that an engineered prompt does not automatically produce a universally "better" answer.
+These experiments showed that an engineered prompt does not automatically produce a universally "better" answer.
 
-Different prompt techniques solve different problems.
+Different prompt techniques solve different problems, so their effectiveness should be evaluated according to the goal of the prompt.
 
-For example:
+---
 
-- RCG may increase response length while improving audience alignment.
-- Constraints can significantly reduce unnecessary detail.
-- Output formatting can improve structural consistency without necessarily improving factual quality.
+## 📏 Measurement & Validation
 
-The effectiveness of a prompt should therefore be evaluated based on the **goal of the prompt**, not only by response length or complexity.
+PromptLab also measures and validates selected response characteristics.
+
+| Feature | Purpose |
+|---|---|
+| **Token Usage** | Parses prompt, completion, and total tokens from the API response |
+| **Latency** | Measures elapsed time for original and engineered requests |
+| **Constraint Validation** | Checks whether the engineered response stays within the 300-word limit |
+| **Output Format Validation** | Checks whether all required sections are present |
+
+Token usage is parsed directly from the API response.
+
+Latency is measured using Java's `System.nanoTime()`.
+
+For the Constraints technique, PromptLab counts the words in the engineered response and reports:
+
+```text
+Word Limit: PASSED
+```
+
+or:
+
+```text
+Word Limit: VIOLATED
+```
+
+For the Output Format technique, the application checks whether these sections are present:
+
+```text
+Short Answer:
+Key Points:
+Example:
+Final Summary:
+```
+
+and reports whether the requested structure was followed.
+
+These checks validate measurable requirements only; they do not evaluate factual correctness or overall response quality.
 
 ---
 
@@ -317,20 +315,15 @@ PromptLab
 └── src
     └── promptlab
         ├── PromptLabApp.java
-        └── PromptGenerator.java
+        ├── PromptGenerator.java
+        └── TokenUsage.java
 ```
 
-- **`PromptLabApp`** — handles console interaction, API communication, JSON processing, and response display.
+- **`PromptLabApp`** — handles console interaction, API communication, measurements, validation, and response display.
 - **`PromptGenerator`** — creates engineered prompts for each supported technique.
+- **`TokenUsage`** — stores parsed prompt, completion, and total token usage values.
 
-Current prompt generation methods:
-
-```text
-createRoleContextGoalPrompt()
-createConstraintsPrompt()
-createOutputFormatPrompt()
-```
-
+---
 
 ## 🌐 API Flow
 
@@ -347,23 +340,25 @@ POST Request to LLM API
   ↓
 HTTP Response
   ↓
-Raw JSON Response
+Parse LLM Response
   ↓
-Parse choices[0].message.content
+Parse Token Usage
   ↓
-Display LLM Response
+Measure / Validate
+  ↓
+Display Results
 ```
-During development, the application displays the HTTP status code, raw JSON response, and parsed LLM response to make the API flow easier to observe and debug.
+
+During development, the application also displays the status code, raw JSON response, and parsed LLM response to make the API flow easier to observe and debug.
 
 ---
+
 ## 🛠️ Technologies Used
 
 - Java
 - Java `HttpClient`
-- HTTP
-- REST API
-- JSON
-- `org.json`
+- HTTP / REST API
+- JSON / `org.json`
 - Groq API
 - Qwen LLM
 - Git & GitHub
@@ -372,86 +367,69 @@ During development, the application displays the HTTP status code, raw JSON resp
 
 ## 🔐 API Key Security
 
-The Groq API key is **not hardcoded** in the source code.
+The Groq API key is not hardcoded in the source code.
 
-Instead, PromptLab reads the key from an environment variable:
+Instead, PromptLab reads it from an environment variable:
 
 ```java
 String apiKey = System.getenv("GROQ_API_KEY");
 ```
 
-This prevents the API key from being committed to the GitHub repository.
+This prevents the API key from being committed to the repository.
 
 ---
 
 ## 🚀 Running the Project
 
-Before running PromptLab, make sure the `GROQ_API_KEY` environment variable is configured.
+Before running PromptLab:
 
-The project also requires the `org.json` library.
+1. Configure the `GROQ_API_KEY` environment variable.
+2. Make sure the `org.json` library is available.
+3. Run the application.
+4. Select a prompt engineering technique and enter a prompt.
+5. Compare the generated responses and measurements.
 
-Then run the application and:
-
-1. Select a prompt engineering technique.
-2. Enter an original prompt.
-3. PromptLab generates the engineered version.
-4. Both prompts are sent separately to the LLM.
-5. The responses are displayed for comparison.
-   
 ---
+
 ## 📚 What I Learned
-Developing PromptLab helped me connect prompt engineering concepts with practical Java and API development.
-Through the project, I gained experience with:
 
-- designing reusable prompt templates
-- comparing original and engineered prompts
-- understanding how different prompt techniques affect model behavior
-- building and sending HTTP POST requests in Java
-- creating and parsing JSON data
-- working with API endpoints, headers, and status codes
-- extracting LLM responses from nested JSON
-- using environment variables for API key security
-- refactoring repeated code into reusable methods
-- separating prompt generation logic from API communication
+Through PromptLab, I practiced:
 
-One of the most important observations was that an engineered prompt is not automatically "better."
+- designing and comparing reusable prompt engineering techniques
+- sending HTTP requests and processing JSON responses with Java
+- working with REST API concepts, headers, status codes, and environment variables
+- parsing token usage, measuring latency, and validating measurable response requirements
+- refactoring repeated logic and separating prompt generation from API communication
 
-Effective prompt engineering depends on the goal: better context alignment, tighter scope, or a more predictable output structure.
+The project also helped me understand the difference between **asking an LLM to follow an instruction** and **checking programmatically whether that instruction was actually followed**.
+
 ---
 
 ## ⚠️ Limitations
 
-PromptLab V1 is intentionally simple.
 Current limitations include:
 
-- only three prompt engineering techniques
-- one console interaction per program run
-- no persistent experiment history
-- no automatic evaluation metric
-- natural-language constraints are not hard limits
-- LLM responses may vary between runs
-- model responses may still contain factual or formatting errors
-
-PromptLab evaluates how prompts influence model behavior; it does not automatically verify the factual correctness of generated responses.
+- only three prompt engineering techniques and one comparison per program run
+- no persistent experiment history or multi-run statistics
+- validation is limited to measurable requirements such as word limits and required sections
+- factual correctness and semantic response quality are not automatically evaluated
+- LLM responses and latency may vary between runs
 
 ---
 
 ## 🔮 Future Improvements
 
-Possible future additions include:
-- One-Shot and Few-Shot prompting
-- Self-Critique and hallucination reduction techniques
-- document-grounded prompts
-- temperature and `top_p` experimentation
-- configurable models
-- experiment history and result exporting
-- improved API error handling
-- repeated experiments without restarting the application
+Possible future improvements include:
+
+- multi-run experiments with aggregate statistics and result exporting
+- improved API error handling and configurable models
+- additional prompt techniques, technique combinations, and parameter experiments
+- quality and cost evaluation, including possible LLM-as-a-Judge experiments
 
 ---
 
 ## 💡 Final Takeaway
 
-PromptLab started as a small prompt engineering exercise but evolved into a practical Java project combining prompt design, HTTP communication, REST APIs, JSON processing, and LLM integration.
-The most valuable part of the project was not simply generating different responses.
-It was being able to **observe and compare how specific prompt engineering decisions changed model behavior in practice.**
+PromptLab evolved from a small prompt engineering exercise into a Java application that combines LLM API integration with response measurement and basic programmatic validation.
+
+Its main goal is to make the effects of different prompt engineering techniques **observable and measurable**.
